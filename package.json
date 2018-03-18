@@ -10,6 +10,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "create-keyframe-animation": "^0.1.0",
     "vue": "^2.5.2",
     "vue-lazyload": "^1.2.2",
     "vue-router": "^3.0.1",
