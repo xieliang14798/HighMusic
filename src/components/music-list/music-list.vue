@@ -17,7 +17,7 @@
     <scroll class="list" :data="songs" ref="list"
             :listen-scroll="listenScroll" :probe-type="probeType" @scroll="scroll">
       <div class="song-list-wrapper">
-        <song-list :songs="songs" @select="selectItem"></song-list>
+        <song-list :songs="songs" @select="selectItem" :rank="rank"></song-list>
       </div>
       <div v-show="!songs.length" class="loading-container">
         <loading></loading>
