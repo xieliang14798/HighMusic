@@ -11,44 +11,50 @@ import RankDetail from '../components/rank-detail/rank-detail'
 Vue.use(Router)
 
 export default new Router({
-  routes: [
-    {
-      path: '/',
-      redirect: '/recommend'
-    },
-    {
-      path: '/recommend',
-      component: Recommend,
-      children: [
+    routes: [
         {
-          path: ':id',
-          component: Disc
-        }
-      ]
-    },
-    {
-      path: '/singer',
-      component: Singer,
-      children: [
+            path: '/',
+            redirect: '/recommend'
+        },
         {
-          path: ':id',
-          component: SingerDetail
-        }
-      ]
-    },
-    {
-      path: '/rank',
-      component: Rank,
-      children: [
+            path: '/recommend',
+            component: Recommend,
+            children: [
+                {
+                    path: ':id',
+                    component: Disc
+                }
+            ]
+        },
         {
-          path: ':id',
-          component: RankDetail
+            path: '/singer',
+            component: Singer,
+            children: [
+                {
+                    path: ':id',
+                    component: SingerDetail
+                }
+            ]
+        },
+        {
+            path: '/rank',
+            component: Rank,
+            children: [
+                {
+                    path: ':id',
+                    component: RankDetail
+                }
+            ]
+        },
+        {
+            path: '/search',
+            component: Search,
+            children: [
+                {
+                    path: ':id',
+                    component: SingerDetail
+                }
+            ]
         }
-      ]
-    },
-    {
-      path: '/search',
-      component: Search
-    }
-  ]
+    ]
 })

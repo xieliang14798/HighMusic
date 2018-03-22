@@ -4,7 +4,7 @@
             <search-box ref="searchBox" @query="onQueryChange"></search-box>
         </div>
         <div class="shortcut-wrapper" ref="shortcutWrapper" v-show="!query">
-            <div class="shortcut">
+            <scroll class="shortcut" ref="shortcut" :data="shortcut">
                 <div>
                     <div class="hot-key">
                         <h1 class="title">热门搜索</h1>
@@ -14,35 +14,56 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="search-history">
-
+                    <div class="search-history" v-show="searchHistory.length">
+                        <h1 class="title">
+                            <span class="text">搜索历史</span>
+                            <span class="clear">
+                                <i class="icon-clear"></i>
+                            </span>
+                        </h1>
+                        <search-list :searches="searchHistory"></search-list>
                     </div>
                 </div>
-            </div>
+            </scroll>
         </div>
         <div class="search-result" v-show="query" ref="searchResult">
-            <suggest :query="query"></suggest>
+            <suggest :query="query" ref="suggest" @listScroll="blurInput" @select="saveSearch"></suggest>
         </div>
+        <router-view></router-view>
     </div>
 </template>
 <script>
     import SearchBox from '../../base/search-box/search-box'
     import {getHotKey} from "../../api/search";
     import {ERR_OK} from "../../api/config";
-    import {searchMixin} from "../../common/js/mixin";
+    import {searchMixin, playlistMixin} from "../../common/js/mixin";
     import Suggest from '../../components/suggest/suggest'
+    import Scroll from '../../base/scroll/scroll'
+    import SearchList from '../../base/search-list/search-list'
 
     export default {
-        mixins: [searchMixin],
+        mixins: [searchMixin, playlistMixin],
         data() {
             return {
                 hotKey: [],
+            }
+        },
+        computed: {
+            shortcut() {
+                return this.hotKey.concat(this.searchHistory)
             }
         },
         created() {
             this._getHotKey()
         },
         methods: {
+            handlePlaylist(playlist) {
+                const bottom = playlist.length > 0 ? '60px' : ''
+                this.$refs.searchResult.style.bottom = bottom
+                this.$refs.suggest.refresh()
+
+                this.$refs.shortcutWrapper.style.bottom = bottom
+            },
             _getHotKey() {
                 getHotKey().then(res => {
                     if (res.code === ERR_OK) {
@@ -53,7 +74,9 @@
         },
         components: {
             SearchBox,
-            Suggest
+            Suggest,
+            Scroll,
+            SearchList
         }
     }
 </script>
@@ -88,6 +111,27 @@
                         background: @color-highlight-background;
                         font-size: @font-size-medium;
                         color: @color-text-d;
+                    }
+                }
+                .search-history {
+                    position: relative;
+                    margin: 0 20px;
+                    .title {
+                        display: flex;
+                        align-items: center;
+                        height: 40px;
+                        font-size: @font-size-medium;
+                        color: @color-text-l;
+                        .text {
+                            flex: 1;
+                        }
+                        .clear {
+                            .extend-click();
+                            .icon-clear {
+                                font-size: @font-size-medium;
+                                color: @color-text-d;
+                            }
+                        }
                     }
                 }
             }

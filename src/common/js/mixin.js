@@ -28,7 +28,13 @@ export const searchMixin = {
             query: ''
         }
     },
+    computed: {
+        ...mapGetters(['searchHistory'])
+    },
     methods: {
+        ...mapActions([
+            'saveSearchHistory'
+        ]),
         onQueryChange(query) {
             this.query = query
         },
@@ -37,6 +43,9 @@ export const searchMixin = {
         },
         addQuery(query) {
             this.$refs.searchBox.setQuery(query)
+        },
+        saveSearch() {
+            this.saveSearchHistory(this.query)
         }
     }
 }

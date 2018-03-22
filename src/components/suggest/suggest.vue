@@ -1,8 +1,13 @@
 <template>
     <scroll class="suggest"
-            ref="suggest">
+            ref="suggest"
+            :data="result"
+            :pullup="pullup"
+            @scrollToEnd="searchMore"
+            :beforeScroll="beforeScroll"
+            @beforeScroll="listScroll">
         <ul class="suggest-list">
-            <li class="suggest-item" v-for="item in result">
+            <li class="suggest-item" v-for="item in result" @click="selectItem(item)">
                 <div class="icon">
                     <i :class="getIconCls(item)"></i>
                 </div>
@@ -10,8 +15,11 @@
                     <p class="text" v-html="getDisplayName(item)"></p>
                 </div>
             </li>
-
+            <loading v-show="hasMore" title=""></loading>
         </ul>
+        <div class="no-result-wrapper" v-show="!hasMore&&!result.length">
+            <no-result :title='NoResult'></no-result>
+        </div>
     </scroll>
 </template>
 <script>
@@ -19,6 +27,10 @@
     import {search} from "../../api/search";
     import {ERR_OK} from "../../api/config";
     import {createSong} from "../../common/js/song";
+    import Loading from '../../base/loading/loading'
+    import NoResult from '../../base/no-result/no-result'
+    import {mapMutations, mapActions} from 'vuex'
+    import Singer from '../../common/js/singer'
 
     const perpage = 20
     const TYPE_SINGER = 'singer'
@@ -45,10 +57,34 @@
                 pullup: true,
                 beforeScroll: true,
                 hasMore: true,
-                result: []
+                result: [],
+                NoResult: '抱歉，暂无搜索结果'
             }
         },
         methods: {
+            ...mapMutations({
+                setSinger: 'SET_SINGER'
+            }),
+            ...mapActions([
+                'insertSong'
+            ]),
+            selectItem(item) {
+                if (item.type === TYPE_SINGER) {
+                    const singer = new Singer({
+                        id: item.singermid,
+                        name: item.singername
+                    })
+                    this.$router.push({
+                        path: `/search/${singer.id}`
+                    })
+                    this.setSinger(singer)
+                } else {
+                    this.insertSong({
+                        song: item
+                    })
+                }
+                this.$emit('select', item)
+            },
             refresh() {
                 this.$refs.suggest.refresh()
             },
@@ -66,17 +102,33 @@
                     return `${item.name}-${item.singer}`
                 }
             },
+            listScroll() {
+                this.$emit('listScroll')
+            },
             search(newQuery) {
                 this.page = 1
                 this.hasMore = true
                 this.$refs.suggest.scrollTo(0, 0)
                 search(newQuery, this.page, this.showSinger, perpage).then(res => {
                     if (res.code === ERR_OK) {
-                        this.result = this._genResult(res.data)
+                        this.result = this._getResult(res.data)
+                        this._checkMore(res.data)
                     }
                 })
             },
-            _genResult(data) {
+            searchMore() {
+                if (!this.hasMore) {
+                    return
+                }
+                this.page++
+                search(this.query, this.page, this.showSinger, perpage).then(res => {
+                    if (res.code === ERR_OK) {
+                        this.result = this.result.concat(this._getResult(res.data))
+                        this._checkMore(res.data)
+                    }
+                })
+            },
+            _getResult(data) {
                 let ret = []
                 if (data.zhida && data.zhida.singerid) {
                     ret.push({
@@ -97,10 +149,18 @@
                     }
                 })
                 return ret
+            },
+            _checkMore(data) {
+                const song = data.song
+                if (!song.list.length || (song.curnum + song.curpage * perpage) > song.totalnum) {
+                    this.hasMore = false
+                }
             }
         },
         components: {
-            Scroll
+            Scroll,
+            Loading,
+            NoResult
         }
     }
 </script>
@@ -135,6 +195,12 @@
                     }
                 }
             }
+        }
+        .no-result-wrapper {
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
         }
     }
 </style>
