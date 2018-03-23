@@ -33,7 +33,9 @@ export const searchMixin = {
     },
     methods: {
         ...mapActions([
-            'saveSearchHistory'
+            'saveSearchHistory',
+            'deleteSearchHistory',
+            'clearSearchHistory'
         ]),
         onQueryChange(query) {
             this.query = query

@@ -3,8 +3,8 @@
         <transition-group name="list" tag="ul">
             <li :key="item" class="search-item" v-for="item in searches" @click="selectItem(item)">
                 <span class="text">{{item}}</span>
-                <span class="icon">
-                    <i class="icon-delete" @click.stop="deleteOne(item)"></i>
+                <span class="icon" @click.stop="deleteOne(item)">
+                    <i class="icon-delete"></i>
                 </span>
             </li>
         </transition-group>
@@ -23,6 +23,7 @@
                 this.$emit('select', item)
             },
             deleteOne(item) {
+                console.log(11)
                 this.$emit('delete', item)
             }
         }

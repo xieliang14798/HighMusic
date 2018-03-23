@@ -17,18 +17,27 @@
                     <div class="search-history" v-show="searchHistory.length">
                         <h1 class="title">
                             <span class="text">搜索历史</span>
-                            <span class="clear">
+                            <span class="clear" @click="showConfirm">
                                 <i class="icon-clear"></i>
                             </span>
                         </h1>
-                        <search-list :searches="searchHistory"></search-list>
+                        <search-list :searches="searchHistory"
+                                     @select="addQuery"
+                                     @delete="deleteSearchHistory"></search-list>
                     </div>
                 </div>
             </scroll>
         </div>
         <div class="search-result" v-show="query" ref="searchResult">
-            <suggest :query="query" ref="suggest" @listScroll="blurInput" @select="saveSearch"></suggest>
+            <suggest :query="query"
+                     ref="suggest"
+                     @listScroll="blurInput"
+                     @select="saveSearch"></suggest>
         </div>
+        <confirm ref="confirm"
+                 text="是否清空所有搜索历史"
+                 confirmBtnText="清空"
+                 @confirm="clearSearchHistory"></confirm>
         <router-view></router-view>
     </div>
 </template>
@@ -40,6 +49,7 @@
     import Suggest from '../../components/suggest/suggest'
     import Scroll from '../../base/scroll/scroll'
     import SearchList from '../../base/search-list/search-list'
+    import Confirm from '../../base/confirm/confirm'
 
     export default {
         mixins: [searchMixin, playlistMixin],
@@ -63,6 +73,7 @@
                 this.$refs.suggest.refresh()
 
                 this.$refs.shortcutWrapper.style.bottom = bottom
+                this.$refs.shortcut.refresh()
             },
             _getHotKey() {
                 getHotKey().then(res => {
@@ -70,13 +81,27 @@
                         this.hotKey = res.data.hotkey.slice(0, 10)
                     }
                 })
+            },
+            showConfirm() {
+                this.$refs.confirm.show()
+            }
+        },
+        watch: {
+            query(newQuery) {
+                if (!newQuery) {//搜索文字从有到无的时候，需要刷新shortcut列表
+                    this.$nextTick(() => {
+                        this.$refs.shortcut.refresh()
+                    })
+
+                }
             }
         },
         components: {
             SearchBox,
             Suggest,
             Scroll,
-            SearchList
+            SearchList,
+            Confirm
         }
     }
 </script>
