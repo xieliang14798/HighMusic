@@ -23,7 +23,6 @@
                 this.$emit('select', item)
             },
             deleteOne(item) {
-                console.log(11)
                 this.$emit('delete', item)
             }
         }
