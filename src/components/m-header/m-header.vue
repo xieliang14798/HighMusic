@@ -1,7 +1,7 @@
 <template>
   <div class="m-header">
     <h1>HighMusic</h1>
-    <router-link tag="div" class="favor" to="/favor">
+    <router-link tag="div" class="favor" to="/user">
       <i class="icon-favor"></i>
     </router-link>
   </div>
